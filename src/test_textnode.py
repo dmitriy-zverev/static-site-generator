@@ -9,10 +9,10 @@ class TestTextNode(unittest.TestCase):
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertEqual(node, node2)
 
-    def test_plain_constructor(self):
-        node = TextNode("text", TextType.PLAIN)
+    def test_text_constructor(self):
+        node = TextNode("text", TextType.TEXT)
         self.assertEqual(node.text, "text")
-        self.assertEqual(node.text_type, TextType.PLAIN)
+        self.assertEqual(node.text_type, TextType.TEXT)
         self.assertEqual(node.url, None)
 
     def test_bold_constructor(self):
