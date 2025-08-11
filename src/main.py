@@ -1,8 +1,10 @@
-from textnode import TextNode
-from textnode import TextType
+from textnode import TextNode, TextType
+from htmlnode import HTMLNode
+
 
 def main():
-    node = TextNode("some text", TextType.LINK, "https://localhost:8888")
+    node = HTMLNode("p", "some text", props={"href": "https://www.google.com", "target": "_blank",})
+    # node = HTMLNode("p", "some text")
     print(node)
 
 if __name__ == "__main__":
