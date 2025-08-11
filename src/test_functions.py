@@ -1,6 +1,11 @@
 import unittest
 
-from functions import text_node_to_html_node, split_nodes_delimiter
+from functions import (
+    text_node_to_html_node, 
+    split_nodes_delimiter, 
+    extract_markdown_images, 
+    extract_markdown_links
+)
 from textnode import TextNode, TextType
 from consts import CODE_DELIMITER, ITALIC_DELIMITER, BOLD_DELIMITER
 
@@ -133,3 +138,27 @@ class TestFunctions(unittest.TestCase):
             split_nodes_delimiter([node], BOLD_DELIMITER, "not known text type")
         except Exception as e:
             self.assertEqual(str(e), "Error: text type should be a TextType object")
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_images_nothing(self):
+        matches = extract_markdown_images(
+            "This is text without images"
+        )
+        self.assertListEqual([], matches)
+
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with an [link text](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("link text", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_links_nothing(self):
+        matches = extract_markdown_links(
+            "This is text without links"
+        )
+        self.assertListEqual([], matches)
