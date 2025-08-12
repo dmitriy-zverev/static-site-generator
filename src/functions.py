@@ -3,6 +3,7 @@ import re
 from textnode import TextNode, TextType
 from leafnode import LeafNode
 from consts import CODE_DELIMITER, BOLD_DELIMITER, ITALIC_DELIMITER
+from blocktype import BlockType
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
@@ -175,3 +176,26 @@ def markdown_to_blocks(markdown):
         )
     )
     
+def block_to_block_type(block):
+    if re.search(r"(?<!#)#{1,6}(?!#) (\w+)", block):
+        return BlockType.HEADING
+    elif block.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
+    elif re.search(r"(>{1}) (\w*)", block):
+        return BlockType.QUOTE
+    elif re.search(r"(-{1}) (\w*)", block):
+        return BlockType.UNORDERED_LIST
+    elif re.search(r"(\d{1}\.{1}) (\w*)", block):
+        nums = list(
+            map(
+                lambda num: int(num[:2].replace(".", "")),
+                block.split("\n")
+            )
+        )
+        correct_order = [i for i in range(1, len(nums) + 1)]
+
+        if nums == correct_order:
+            return BlockType.ORDERED_LIST
+        return BlockType.PARAGRAPH
+    else:
+        return BlockType.PARAGRAPH

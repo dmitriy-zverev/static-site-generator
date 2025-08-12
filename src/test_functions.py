@@ -9,8 +9,10 @@ from functions import (
     split_nodes_link,
     text_to_textnodes,
     markdown_to_blocks,
+    block_to_block_type,
 )
 from textnode import TextNode, TextType
+from blocktype import BlockType
 from consts import CODE_DELIMITER, ITALIC_DELIMITER, BOLD_DELIMITER
 
 class TestFunctions(unittest.TestCase):
@@ -326,4 +328,127 @@ This is the same paragraph on a new line
         self.assertEqual(
             blocks,
             [],
+        )
+
+    def test_block_to_block_type_paragraph(self):
+        block = """This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.PARAGRAPH   
+        )
+    
+    def test_block_to_block_type_code(self):
+        block = """```
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+```"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.CODE   
+        )
+
+    def test_block_to_block_type_quote(self):
+        block = """> This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.QUOTE   
+        )
+
+    def test_block_to_block_type_heading(self):
+        block = """# This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """## This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """### This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """#### This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """##### This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """###### This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.HEADING   
+        )
+
+        block = """####### This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.PARAGRAPH   
+        )
+
+        block = """####This is another paragraph with _italic_ text and `code` here"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.PARAGRAPH   
+        )
+
+    def test_block_to_block_type_ulist(self):
+        block = """- This is another paragraph with _italic_ text and `code` here
+- Another item"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.UNORDERED_LIST   
+        )
+
+    def test_block_to_block_type_olist(self):
+        block = """1. This is another paragraph with _italic_ text and `code` here
+2. Another item"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.ORDERED_LIST   
+        )
+
+        block = """1. This is another paragraph with _italic_ text and `code` here
+2. Another item
+3. more
+4. more"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.ORDERED_LIST   
+        )
+
+        block = """1. This is another paragraph with _italic_ text and `code` here
+3. Another item
+3. more
+4. more"""
+        block_type = block_to_block_type(block)
+        self.assertEqual(
+            block_type,
+            BlockType.PARAGRAPH   
         )
