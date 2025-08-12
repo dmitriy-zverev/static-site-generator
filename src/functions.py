@@ -2,6 +2,7 @@ import re
 
 from textnode import TextNode, TextType
 from leafnode import LeafNode
+from consts import CODE_DELIMITER, BOLD_DELIMITER, ITALIC_DELIMITER
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
@@ -52,3 +53,111 @@ def extract_markdown_images(text):
 
 def extract_markdown_links(text):
     return re.findall(r"\[(.*?)\]\((.*?)\)", text)
+
+def split_nodes_image(old_nodes):
+    if old_nodes == []:
+        raise Exception("Error: cannot split empty nodes")
+    
+    new_nodes = []
+    for old_node in old_nodes:
+        found_images = extract_markdown_images(old_node.text)
+        found_images_str = list(map(lambda tpl: f"![{tpl[0]}]({tpl[1]})", found_images))
+
+        if len(found_images) == 0 or old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+
+        idx = 0
+        for i in range(len(found_images_str)):
+            cur_idx = idx + old_node.text[idx:].index(found_images_str[i])
+            next_idx = cur_idx + len(found_images_str[i])
+            
+            new_nodes.append(
+                TextNode(
+                    old_node.text[idx : cur_idx],
+                    TextType.TEXT,
+                )
+            )
+            new_nodes.append(
+                TextNode(
+                    found_images[i][0],
+                    TextType.IMAGE,
+                    found_images[i][1]
+                )
+            )
+
+            idx = next_idx
+
+        if idx < len(old_node.text):
+            new_nodes.append(
+                TextNode(
+                    old_node.text[idx : ],
+                    TextType.TEXT
+                )
+            )
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    if old_nodes == []:
+        raise Exception("Error: cannot split empty nodes")
+    
+    new_nodes = []
+    for old_node in old_nodes:
+        found_images = extract_markdown_links(old_node.text)
+        found_images_str = list(map(lambda tpl: f"[{tpl[0]}]({tpl[1]})", found_images))
+
+        if len(found_images) == 0 or old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+
+        idx = 0
+        for i in range(len(found_images_str)):
+            cur_idx = idx + old_node.text[idx:].index(found_images_str[i])
+            next_idx = cur_idx + len(found_images_str[i])
+            
+            new_nodes.append(
+                TextNode(
+                    old_node.text[idx : cur_idx],
+                    TextType.TEXT,
+                )
+            )
+            new_nodes.append(
+                TextNode(
+                    found_images[i][0],
+                    TextType.LINK,
+                    found_images[i][1]
+                )
+            )
+
+            idx = next_idx
+
+        if idx < len(old_node.text):
+            new_nodes.append(
+                TextNode(
+                    old_node.text[idx : ],
+                    TextType.TEXT
+                )
+            )
+    return new_nodes
+
+def text_to_textnodes(text):
+    text_node = TextNode(text, TextType.TEXT)
+
+    return split_nodes_delimiter(
+        split_nodes_delimiter(
+            split_nodes_delimiter(
+                split_nodes_link(
+                    split_nodes_image(
+                        [text_node]
+                    )
+                ),
+                BOLD_DELIMITER,
+                TextType.BOLD
+            ),
+            ITALIC_DELIMITER,
+            TextType.ITALIC
+        ),
+        CODE_DELIMITER,
+        TextType.CODE
+    )
