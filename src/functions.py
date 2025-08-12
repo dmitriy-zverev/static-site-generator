@@ -161,3 +161,17 @@ def text_to_textnodes(text):
         CODE_DELIMITER,
         TextType.CODE
     )
+
+def markdown_to_blocks(markdown):
+    return list(
+        filter(
+            None,
+            list(
+                map(
+                    lambda s: s.strip(),
+                    markdown.split("\n\n")
+                )
+            )
+        )
+    )
+    
