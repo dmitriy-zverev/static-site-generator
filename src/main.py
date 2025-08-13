@@ -1,35 +1,35 @@
-from textnode import TextNode, TextType
-from htmlnode import HTMLNode
-from functions import markdown_to_blocks, block_to_block_type
+from functions import markdown_to_html_node
 
 
 def main():
     md = """
-This is **bolded** paragraph
+# Header 1
 
-This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
+- item 1
+- item 2
+
+## Header 2
+
+Paragraph
+and _more_ text
 
 ```
-some code.py
+Code
+here and _there_
+**booold**
 ```
 
->Great quote
+[link](https://notscammy.com)
 
-### This is the same paragraph on a new line ###
+![img alt](https://notscammy.com/image.jpg)
 
-- This is a list
-- with items
+### Header 3
 
-1. item 1
-2. item 3
-3. item 3
-4. item 3
+> Great quote
 """
-    blocks = markdown_to_blocks(md)
+    blocks = markdown_to_html_node(md)
     
-    for b in blocks:
-        print(block_to_block_type(b))
+    print(f"{blocks.to_html()}")
 
 if __name__ == "__main__":
     main()

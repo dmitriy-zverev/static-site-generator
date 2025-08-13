@@ -2,8 +2,9 @@ import re
 
 from textnode import TextNode, TextType
 from leafnode import LeafNode
-from consts import CODE_DELIMITER, BOLD_DELIMITER, ITALIC_DELIMITER
+from htmlnode import HTMLNode
 from blocktype import BlockType
+from consts import CODE_DELIMITER, BOLD_DELIMITER, ITALIC_DELIMITER
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
@@ -42,7 +43,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             raise Exception("Error: cannot split nodes because of invalid syntax")
 
         for i in range(len(new_node)):
-            if i % 2 == 1:
+            if i % 2 == 1 and new_node[i] != "":
                 new_nodes.append(TextNode(new_node[i], text_type))
             else:
                 new_nodes.append(TextNode(new_node[i], old_node.text_type))
@@ -179,7 +180,7 @@ def markdown_to_blocks(markdown):
 def block_to_block_type(block):
     if re.search(r"(?<!#)#{1,6}(?!#) (\w+)", block):
         return BlockType.HEADING
-    elif block.startswith("```") and block.endswith("```"):
+    elif block.startswith("```") and block.endswith("```") and len(block) >= 6:
         return BlockType.CODE
     elif re.search(r"(>{1}) (\w*)", block):
         return BlockType.QUOTE
@@ -199,3 +200,73 @@ def block_to_block_type(block):
         return BlockType.PARAGRAPH
     else:
         return BlockType.PARAGRAPH
+
+
+def markdown_to_html_node(markdown):
+    if markdown == "":
+        raise Exception("Error: cannot convert empty .md file")
+    
+    blocks = markdown_to_blocks(markdown)
+
+    html_blocks = HTMLNode("div", "")
+
+    for block in blocks:
+        html_block = block_to_html_node(block)
+        html_blocks.children.append(html_block)
+    
+    return html_blocks
+
+
+def text_nodes_to_html_children(text_nodes):
+    return list(
+        map(
+            lambda node: text_node_to_html_node(node),
+            text_nodes
+        )
+    )
+
+def block_to_html_node(block):
+    block_type = block_to_block_type(block)
+    html_block = None
+
+    match block_type:
+            case BlockType.PARAGRAPH:
+                html_block = HTMLNode("p", "")
+                html_block.children = text_nodes_to_html_children(text_to_textnodes(" ".join(block.split("\n"))))
+            case BlockType.HEADING:
+                first_space = block.index(" ")
+                hashtags_count = block[:first_space].count("#")
+                html_block = HTMLNode("h" + str(hashtags_count), "")
+                html_block.children.append(LeafNode(None, block.strip("#").strip(" ")))
+            case BlockType.CODE:
+                html_block = HTMLNode("pre", "")
+                html_block.children.append(LeafNode("code", block.strip(CODE_DELIMITER)))
+            case BlockType.UNORDERED_LIST:
+                html_block = HTMLNode("ul", "")
+                ul_items = list(
+                    map(
+                        lambda item: item.strip("- "),
+                        block.split("\n")
+                    )
+                )
+                for ul_item in ul_items:
+                    html_block.children.append(LeafNode("li", ul_item))
+            case BlockType.ORDERED_LIST:
+                html_block = HTMLNode("ol", "")
+                ol_items = list(
+                    map(
+                        lambda item: item[item.index(".") + 1 : ].strip(" "),
+                        block.split("\n")
+                    )
+                )
+                for ol_item in ol_items:
+                    html_block.children.append(LeafNode("li", ol_item))
+            case BlockType.QUOTE:
+                html_block = HTMLNode("blockquote", "")
+                html_block.children.append(LeafNode(None, block.strip(">").strip(" ")))
+            case _:
+                raise Exception("Error: unknown block type in .md file")
+        
+    html_block.value = html_block.with_children()
+
+    return html_block
