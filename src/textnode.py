@@ -14,13 +14,14 @@ class TextNode:
             raise Exception("Error: text field cannot be empty")
         if text_type not in TextType:
             raise Exception("Error: text_type should be a TextType object")
-        if (url 
-            and not ("http://" in url or "https://" in url)):
-            raise Exception("Error: invalid url")
 
         self.text = text
         self.text_type = text_type
-        self.url = url
+
+        if url and not url.startswith("http"):
+            self.url = "." + url
+        else:
+            self.url = url
 
     def __eq__(self, other):
         return (

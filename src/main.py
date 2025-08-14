@@ -1,35 +1,18 @@
-import os
-import shutil
-
-from consts import COPY_TO_DIR, COPY_FROM_DIR
+from consts import (
+    COPY_TO_DIR, 
+    COPY_FROM_DIR,
+)
+from functions import (
+    copy_from_public_to_static,
+    generate_page,
+)
 
 
 def main():
     copy_from_public_to_static(COPY_FROM_DIR, COPY_TO_DIR)
-
-def copy_from_public_to_static(from_dir, to_dir):
-    static_dir = os.path.abspath(from_dir)
-
-    if os.path.exists(os.path.abspath(to_dir)):
-        shutil.rmtree(os.path.abspath(to_dir))
-
-    os.mkdir(os.path.abspath(to_dir))
-
-    public_dir = os.path.abspath(to_dir)
-    static_content = os.listdir(static_dir)
-
-    for content in static_content:
-        static_file_path = os.path.join(static_dir, content)
-        if os.path.isfile(static_file_path):
-            public_file_path = os.path.join(public_dir, content)
-            shutil.copy(static_file_path, public_file_path)
-        else:
-            copy_from_public_to_static(
-                static_file_path,
-                os.path.join(public_dir, content)
-            )
-    
+    generate_page("content/index.md", "template.html", "public/index.html")
 
 
 if __name__ == "__main__":
     main()
+

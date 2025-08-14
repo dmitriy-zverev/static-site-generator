@@ -4,3 +4,6 @@ BOLD_DELIMITER = "**"
 
 COPY_TO_DIR = "./public"
 COPY_FROM_DIR = "./static"
+
+TITLE_PLACEHOLDER = "{{ Title }}"
+CONTENT_PLACEHOLDER = "{{ Content }}"

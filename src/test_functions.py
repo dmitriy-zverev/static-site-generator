@@ -11,6 +11,7 @@ from functions import (
     markdown_to_blocks,
     block_to_block_type,
     markdown_to_html_node,
+    extract_title,
 )
 from textnode import TextNode, TextType
 from blocktype import BlockType
@@ -483,7 +484,7 @@ the **same** even with inline stuff
         html = node.to_html()
         self.assertEqual(
             html,
-            """<div><pre><code>\nThis is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"""
+            """<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff</code></pre></div>"""
         )
 
     def test_heading(self):
@@ -507,7 +508,7 @@ the **same** even with inline stuff
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><blockquote>Very deep qquote</blockquote></div>"
+            "<div><blockquote><p>Very deep qquote</p></blockquote></div>"
         )
 
     def test_ulist(self):
@@ -567,5 +568,31 @@ here and _there_
         html = node.to_html()
         self.assertEqual(
             html,
-            '<div><h1>Header 1</h1><ul><li>item 1</li><li>item 2</li></ul><h2>Header 2</h2><p>Paragraph and <i>more</i> text</p><pre><code>\nCode\nhere and _there_\n**booold**\n</code></pre><p><a href="https://notscammy.com">link</a></p><p><img src="https://notscammy.com/image.jpg" alt="img alt"></img></p><h3>Header 3</h3><blockquote>Great quote</blockquote></div>'
+            '<div><h1>Header 1</h1><ul><li>item 1</li><li>item 2</li></ul><h2>Header 2</h2><p>Paragraph and <i>more</i> text</p><pre><code>Code\nhere and _there_\n**booold**</code></pre><p><a href="https://notscammy.com">link</a></p><p><img src="https://notscammy.com/image.jpg" alt="img alt"></img></p><h3>Header 3</h3><blockquote><p>Great quote</p></blockquote></div>'
         )
+
+    def test_extract_title(self):
+        md = "# there is a title"
+        title = extract_title(md)
+        self.assertEqual(
+            title, 
+            "there is a title"
+        )
+
+        md = "no title, just plain text"
+        try:
+            title = extract_title(md)
+        except Exception as e:
+            self.assertEqual(
+                str(e),
+                "Error: there is no title in .md file"
+            )
+
+        md = "## title 2"
+        try:
+            title = extract_title(md)
+        except Exception as e:
+            self.assertEqual(
+                str(e),
+                "Error: there is no title in .md file"
+            )

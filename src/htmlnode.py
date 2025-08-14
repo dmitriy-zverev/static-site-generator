@@ -37,4 +37,4 @@ class HTMLNode:
         return value_with_children
 
     def __repr__(self):
-        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>\nChildren: {self.children}"
+        return f"HTMLNode(<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}> Children: {self.children})"

@@ -1,10 +1,18 @@
 import re
+import os
+import shutil
 
 from textnode import TextNode, TextType
 from leafnode import LeafNode
 from htmlnode import HTMLNode
 from blocktype import BlockType
-from consts import CODE_DELIMITER, BOLD_DELIMITER, ITALIC_DELIMITER
+from consts import (
+    CODE_DELIMITER, 
+    BOLD_DELIMITER, 
+    ITALIC_DELIMITER,
+    TITLE_PLACEHOLDER,
+    CONTENT_PLACEHOLDER,
+)
 
 def text_node_to_html_node(text_node):
     match text_node.text_type:
@@ -233,24 +241,32 @@ def block_to_html_node(block):
             case BlockType.PARAGRAPH:
                 html_block = HTMLNode("p", "")
                 html_block.children = text_nodes_to_html_children(text_to_textnodes(" ".join(block.split("\n"))))
+
             case BlockType.HEADING:
                 first_space = block.index(" ")
                 hashtags_count = block[:first_space].count("#")
                 html_block = HTMLNode("h" + str(hashtags_count), "")
                 html_block.children.append(LeafNode(None, block.strip("#").strip(" ")))
+
             case BlockType.CODE:
                 html_block = HTMLNode("pre", "")
-                html_block.children.append(LeafNode("code", block.strip(CODE_DELIMITER)))
+                html_block.children.append(LeafNode("code", block.strip(CODE_DELIMITER).strip("\n")))
+
             case BlockType.UNORDERED_LIST:
                 html_block = HTMLNode("ul", "")
+
                 ul_items = list(
                     map(
                         lambda item: item.strip("- "),
                         block.split("\n")
                     )
                 )
+
                 for ul_item in ul_items:
-                    html_block.children.append(LeafNode("li", ul_item))
+                    node = HTMLNode(None, "", text_nodes_to_html_children(text_to_textnodes(ul_item)))
+                    li_node = LeafNode("li", node.with_children())
+                    html_block.children.append(li_node)
+
             case BlockType.ORDERED_LIST:
                 html_block = HTMLNode("ol", "")
                 ol_items = list(
@@ -260,13 +276,94 @@ def block_to_html_node(block):
                     )
                 )
                 for ol_item in ol_items:
-                    html_block.children.append(LeafNode("li", ol_item))
+                    node = HTMLNode(None, "", text_nodes_to_html_children(text_to_textnodes(ol_item)))
+                    li_node = LeafNode("li", node.with_children())
+                    html_block.children.append(li_node)
+
             case BlockType.QUOTE:
+                leaf_nodes = list(
+                    map(
+                        lambda b: LeafNode(None, b.strip(">").strip(" ")),
+                        block.split("\n")
+                    )
+                )
+
                 html_block = HTMLNode("blockquote", "")
-                html_block.children.append(LeafNode(None, block.strip(">").strip(" ")))
+                html_block.children.extend(leaf_nodes)
+
             case _:
                 raise Exception("Error: unknown block type in .md file")
         
     html_block.value = html_block.with_children()
 
     return html_block
+
+
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+
+    for block in blocks:
+        if block.startswith("# "):
+            return block[1 : ].strip()
+    
+    raise Exception("Error: there is no title in .md file")
+
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    with open(from_path) as f:
+        file_content = f.read()
+    
+    with open(template_path) as f:
+        template_content = f.read()
+
+    html_content = markdown_to_html_node(file_content).to_html()
+    html_title = extract_title(file_content)
+
+    template_content = template_content.replace(
+        TITLE_PLACEHOLDER,
+        html_title
+    )
+
+    template_content = template_content.replace(
+        CONTENT_PLACEHOLDER,
+        html_content
+    )
+
+    if not os.path.exists(os.path.abspath(dest_path)):
+        dest_dirs = dest_path.split("/")
+
+        if len(dest_dirs) > 1:
+            dest_dirs = os.path.abspath("/".join(dest_dirs[ : -1]))
+
+            if not os.path.exists(dest_dirs):
+                os.makedirs()
+    
+    abs_path_to_page = os.path.abspath(dest_path)
+
+    with open(abs_path_to_page, "a") as f:
+        f.write(template_content)
+
+
+def copy_from_public_to_static(from_dir, to_dir):
+    static_dir = os.path.abspath(from_dir)
+
+    if os.path.exists(os.path.abspath(to_dir)):
+        shutil.rmtree(os.path.abspath(to_dir))
+
+    os.mkdir(os.path.abspath(to_dir))
+
+    public_dir = os.path.abspath(to_dir)
+    static_content = os.listdir(static_dir)
+
+    for content in static_content:
+        static_file_path = os.path.join(static_dir, content)
+        if os.path.isfile(static_file_path):
+            public_file_path = os.path.join(public_dir, content)
+            shutil.copy(static_file_path, public_file_path)
+        else:
+            copy_from_public_to_static(
+                static_file_path,
+                os.path.join(public_dir, content)
+            )
