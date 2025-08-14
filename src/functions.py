@@ -336,7 +336,7 @@ def copy_from_public_to_static(from_dir, to_dir):
             )
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path) as f:
@@ -358,6 +358,16 @@ def generate_page(from_path, template_path, dest_path):
         html_content
     )
 
+    template_content = template_content.replace(
+        "href=\"/",
+        f"href=\"{basepath}"
+    )
+
+    template_content = template_content.replace(
+        "src=\"/",
+        f"src=\"{basepath}"
+    )
+
     if not os.path.exists(os.path.abspath(dest_path)):
         dest_dirs = dest_path.split("/")
 
@@ -373,7 +383,7 @@ def generate_page(from_path, template_path, dest_path):
         f.write(template_content)
 
 
-def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursively(dir_path_content, template_path, dest_dir_path, basepath):
     abs_content_path = os.path.abspath(dir_path_content)
     abs_template_path = os.path.abspath(template_path)
     abs_dir_path = os.path.abspath(dest_dir_path)
@@ -385,7 +395,7 @@ def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
         new_dest_content_path = os.path.join(abs_dir_path, content)
         
         if os.path.isdir(new_content_path):
-            generate_pages_recursively(new_content_path, abs_template_path, new_dest_content_path)
+            generate_pages_recursively(new_content_path, abs_template_path, new_dest_content_path, basepath)
         
         if os.path.isfile(new_content_path):
-            generate_page(new_content_path, abs_template_path, new_dest_content_path.replace(".md", ".html"))
+            generate_page(new_content_path, abs_template_path, new_dest_content_path.replace(".md", ".html"), basepath)
