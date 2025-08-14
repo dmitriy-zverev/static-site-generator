@@ -245,8 +245,12 @@ def block_to_html_node(block):
             case BlockType.HEADING:
                 first_space = block.index(" ")
                 hashtags_count = block[:first_space].count("#")
+                
+                node = HTMLNode(None, "", text_nodes_to_html_children(text_to_textnodes(block.strip("#").strip(" "))))
+                h_node = LeafNode(None, node.with_children())
+
                 html_block = HTMLNode("h" + str(hashtags_count), "")
-                html_block.children.append(LeafNode(None, block.strip("#").strip(" ")))
+                html_block.children.append(h_node)
 
             case BlockType.CODE:
                 html_block = HTMLNode("pre", "")
@@ -283,7 +287,7 @@ def block_to_html_node(block):
             case BlockType.QUOTE:
                 leaf_nodes = list(
                     map(
-                        lambda b: LeafNode(None, b.strip(">").strip(" ")),
+                        lambda b: LeafNode(None, b.strip(">").strip(" ") + "\n"),
                         block.split("\n")
                     )
                 )
@@ -307,6 +311,29 @@ def extract_title(markdown):
             return block[1 : ].strip()
     
     raise Exception("Error: there is no title in .md file")
+
+
+def copy_from_public_to_static(from_dir, to_dir):
+    static_dir = os.path.abspath(from_dir)
+
+    if os.path.exists(os.path.abspath(to_dir)):
+        shutil.rmtree(os.path.abspath(to_dir))
+
+    os.mkdir(os.path.abspath(to_dir))
+
+    public_dir = os.path.abspath(to_dir)
+    static_content = os.listdir(static_dir)
+
+    for content in static_content:
+        static_file_path = os.path.join(static_dir, content)
+        if os.path.isfile(static_file_path):
+            public_file_path = os.path.join(public_dir, content)
+            shutil.copy(static_file_path, public_file_path)
+        else:
+            copy_from_public_to_static(
+                static_file_path,
+                os.path.join(public_dir, content)
+            )
 
 
 def generate_page(from_path, template_path, dest_path):
@@ -338,7 +365,7 @@ def generate_page(from_path, template_path, dest_path):
             dest_dirs = os.path.abspath("/".join(dest_dirs[ : -1]))
 
             if not os.path.exists(dest_dirs):
-                os.makedirs()
+                os.makedirs(dest_dirs)
     
     abs_path_to_page = os.path.abspath(dest_path)
 
@@ -346,24 +373,19 @@ def generate_page(from_path, template_path, dest_path):
         f.write(template_content)
 
 
-def copy_from_public_to_static(from_dir, to_dir):
-    static_dir = os.path.abspath(from_dir)
+def generate_pages_recursively(dir_path_content, template_path, dest_dir_path):
+    abs_content_path = os.path.abspath(dir_path_content)
+    abs_template_path = os.path.abspath(template_path)
+    abs_dir_path = os.path.abspath(dest_dir_path)
 
-    if os.path.exists(os.path.abspath(to_dir)):
-        shutil.rmtree(os.path.abspath(to_dir))
+    content_list = os.listdir(abs_content_path)
 
-    os.mkdir(os.path.abspath(to_dir))
-
-    public_dir = os.path.abspath(to_dir)
-    static_content = os.listdir(static_dir)
-
-    for content in static_content:
-        static_file_path = os.path.join(static_dir, content)
-        if os.path.isfile(static_file_path):
-            public_file_path = os.path.join(public_dir, content)
-            shutil.copy(static_file_path, public_file_path)
-        else:
-            copy_from_public_to_static(
-                static_file_path,
-                os.path.join(public_dir, content)
-            )
+    for content in content_list:
+        new_content_path = os.path.join(abs_content_path, content)
+        new_dest_content_path = os.path.join(abs_dir_path, content)
+        
+        if os.path.isdir(new_content_path):
+            generate_pages_recursively(new_content_path, abs_template_path, new_dest_content_path)
+        
+        if os.path.isfile(new_content_path):
+            generate_page(new_content_path, abs_template_path, new_dest_content_path.replace(".md", ".html"))

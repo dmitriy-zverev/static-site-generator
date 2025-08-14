@@ -17,11 +17,7 @@ class TextNode:
 
         self.text = text
         self.text_type = text_type
-
-        if url and not url.startswith("http"):
-            self.url = "." + url
-        else:
-            self.url = url
+        self.url = url
 
     def __eq__(self, other):
         return (

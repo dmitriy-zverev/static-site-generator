@@ -508,7 +508,7 @@ the **same** even with inline stuff
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><blockquote><p>Very deep qquote</p></blockquote></div>"
+            "<div><blockquote>Very deep qquote</blockquote></div>"
         )
 
     def test_ulist(self):
@@ -568,7 +568,7 @@ here and _there_
         html = node.to_html()
         self.assertEqual(
             html,
-            '<div><h1>Header 1</h1><ul><li>item 1</li><li>item 2</li></ul><h2>Header 2</h2><p>Paragraph and <i>more</i> text</p><pre><code>Code\nhere and _there_\n**booold**</code></pre><p><a href="https://notscammy.com">link</a></p><p><img src="https://notscammy.com/image.jpg" alt="img alt"></img></p><h3>Header 3</h3><blockquote><p>Great quote</p></blockquote></div>'
+            '<div><h1>Header 1</h1><ul><li>item 1</li><li>item 2</li></ul><h2>Header 2</h2><p>Paragraph and <i>more</i> text</p><pre><code>Code\nhere and _there_\n**booold**</code></pre><p><a href="https://notscammy.com">link</a></p><p><img src="https://notscammy.com/image.jpg" alt="img alt"></img></p><h3>Header 3</h3><blockquote>Great quote</blockquote></div>'
         )
 
     def test_extract_title(self):

@@ -4,13 +4,13 @@ from consts import (
 )
 from functions import (
     copy_from_public_to_static,
-    generate_page,
+    generate_pages_recursively,
 )
 
 
 def main():
     copy_from_public_to_static(COPY_FROM_DIR, COPY_TO_DIR)
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursively("content", "template.html", "public")
 
 
 if __name__ == "__main__":
