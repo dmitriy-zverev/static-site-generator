@@ -1,35 +1,35 @@
-from functions import markdown_to_html_node
+import os
+import shutil
+
+from consts import COPY_TO_DIR, COPY_FROM_DIR
 
 
 def main():
-    md = """
-# Header 1
+    copy_from_public_to_static(COPY_FROM_DIR, COPY_TO_DIR)
 
-- item 1
-- item 2
+def copy_from_public_to_static(from_dir, to_dir):
+    static_dir = os.path.abspath(from_dir)
 
-## Header 2
+    if os.path.exists(os.path.abspath(to_dir)):
+        shutil.rmtree(os.path.abspath(to_dir))
 
-Paragraph
-and _more_ text
+    os.mkdir(os.path.abspath(to_dir))
 
-```
-Code
-here and _there_
-**booold**
-```
+    public_dir = os.path.abspath(to_dir)
+    static_content = os.listdir(static_dir)
 
-[link](https://notscammy.com)
-
-![img alt](https://notscammy.com/image.jpg)
-
-### Header 3
-
-> Great quote
-"""
-    blocks = markdown_to_html_node(md)
+    for content in static_content:
+        static_file_path = os.path.join(static_dir, content)
+        if os.path.isfile(static_file_path):
+            public_file_path = os.path.join(public_dir, content)
+            shutil.copy(static_file_path, public_file_path)
+        else:
+            copy_from_public_to_static(
+                static_file_path,
+                os.path.join(public_dir, content)
+            )
     
-    print(f"{blocks.to_html()}")
+
 
 if __name__ == "__main__":
     main()

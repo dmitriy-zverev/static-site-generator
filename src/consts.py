@@ -1,3 +1,6 @@
 CODE_DELIMITER = "`"
 ITALIC_DELIMITER = "_"
 BOLD_DELIMITER = "**"
+
+COPY_TO_DIR = "./public"
+COPY_FROM_DIR = "./static"
