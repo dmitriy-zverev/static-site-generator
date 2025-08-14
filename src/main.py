@@ -11,10 +11,12 @@ from functions import (
 
 
 def main():
-    basepath = sys.argv[0]
+    basepath = sys.argv
 
-    if not basepath:
+    if len(basepath) < 2:
         basepath = "/"
+    else:
+        basepath = basepath[1]
 
     copy_from_public_to_static(COPY_FROM_DIR, COPY_TO_DIR)
     generate_pages_recursively("content", "template.html", "docs", basepath)
