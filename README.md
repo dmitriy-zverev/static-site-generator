@@ -14,6 +14,3 @@ Also if you want to publish this to your server, first change the second argumen
 
 But the cool thing is that you can write all of your blog posts into separate .md files and then build it and push to the server. Amazing.
 <img width="1183" height="1226" alt="Screenshot 2025-08-14 at 15 30 46" src="https://github.com/user-attachments/assets/3e2f0ff5-81c6-4db5-bfad-55a5d4eab4e9" />
-
-## Certificate for completion
-<img width="915" height="558" alt="bootdev_certificate" src="https://github.com/user-attachments/assets/1fbffd98-0b0c-444b-94fb-995ea5e897b0" />
